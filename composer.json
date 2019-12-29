@@ -1,0 +1,16 @@
+{
+    "config": {
+        "platform": {
+            "php": "7.2"
+        }
+    },
+    "require": {
+        "php": "^7.2",
+        "ext-tokenizer": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "ngyuki\\Ephp\\": "src/"
+        }
+    }
+}
