@@ -24,4 +24,25 @@ class StreamFilterTest extends TestCase
         ]);
         $this->assertStringMatchesFormat($expected, $output);
     }
+
+    /**
+     * @test
+     */
+    public function inc()
+    {
+        $file = __DIR__ . '/_files/inc1.phtml';
+        ob_start();
+        try {
+            require StreamFilter::path($file, 'htmlspecialchars');
+        } finally {
+            $output = ob_get_clean();
+        }
+        $output = strtr($output, [DIRECTORY_SEPARATOR => '/']);
+        $expected = implode("\n", [
+            'this is &amp;inc1.phtml',
+            'this is &amp;inc2.phtml',
+            'this is &amp;inc3.phtml',
+        ]);
+        $this->assertStringMatchesFormat($expected, $output);
+    }
 }

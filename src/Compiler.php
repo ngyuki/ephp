@@ -12,9 +12,15 @@ class Compiler
      */
     private $echo;
 
-    public function __construct($echo = 'htmlspecialchars')
+    /**
+     * @var callable
+     */
+    private $includeWrapper;
+
+    public function __construct($echo = 'htmlspecialchars', callable $includeWrapper = null)
     {
         $this->echo = $echo;
+        $this->includeWrapper = $includeWrapper;
     }
 
     public function compile(string $source, string $filename = null): string
@@ -35,9 +41,11 @@ class Compiler
                 return $output;
             }
         } elseif ($node instanceof Node\Expression\ScriptInclusionExpression) {
-            $output .= $node->requireOrIncludeKeyword->getFullText($node->getFileContents());
-            $output .= $this->visit($node->expression, $filename);
-            return $output;
+            if ($this->includeWrapper !== null) {
+                $output .= $node->requireOrIncludeKeyword->getFullText($node->getFileContents());
+                $output .= ' (' . ($this->includeWrapper)($this->visit($node->expression, $filename)) . ')';
+                return $output;
+            }
         } elseif ($node instanceof Node\QualifiedName) {
             if ($filename !== null) {
                 if ($node->getText() === '__DIR__') {
