@@ -1,6 +1,8 @@
 <?php
 namespace ngyuki\Ephp;
 
+use RuntimeException;
+
 class CachedCompiler
 {
     /**
@@ -11,17 +13,17 @@ class CachedCompiler
     /**
      * @var bool
      */
-    private $ignoreTimestamp;
+    private $forceCompile;
 
-    public function __construct(string $echo, $ignoreTimestamp = false)
+    public function __construct(string $echo, $forceCompile = false)
     {
         $this->compiler = new Compiler($echo);
-        $this->ignoreTimestamp = $ignoreTimestamp;
+        $this->forceCompile = $forceCompile;
     }
 
     public function compile(string $sourceFile, string $compiledFile)
     {
-        if (file_exists($compiledFile) && ($this->ignoreTimestamp || filemtime($sourceFile) <= filemtime($compiledFile))) {
+        if (!$this->forceCompile && file_exists($compiledFile) && (filemtime($sourceFile) <= filemtime($compiledFile))) {
             return $compiledFile;
         }
 
