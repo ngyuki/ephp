@@ -8,15 +8,45 @@ class CompilerTest extends TestCase
 {
     function test()
     {
-        $file = __DIR__ . '/_files/01.phtml';
-        $code = (new Compiler('App\\Strings::escape'))->compile(file_get_contents($file), '/path/to/file.php');
-        $this->assertIsString($code);
+        $compiled = (new Compiler(__DIR__ . '/_files/', __DIR__ . '/_files/cache', 'htmlspecialchars', true))
+            ->compile(__DIR__ . '/_files/01.phtml');
+
+        ob_start();
+        try {
+            require $compiled;
+        } finally {
+            $output = ob_get_clean();
+        }
+        $output = strtr($output, [DIRECTORY_SEPARATOR => '/']);
         $expected = implode("\n", [
-            "<s><?=App\Strings::escape( '<br>') ?></s>",
-            "<s><?php echo '<br>' ?></s>",
-            "<s><?php echo '/path/to' ?></s>",
-            "<s><?php echo '/path/to/file.php' ?></s>",
+            '<s>&lt;br&gt;</s>',
+            '<s><br></s>',
+            '<s>%s/tests/_files</s>',
+            '<s>%s/tests/_files/01.phtml</s>',
         ]);
-        $this->assertEquals($expected, trim($code));
+        $this->assertStringMatchesFormat($expected, $output);
+    }
+
+    /**
+     * @test
+     */
+    public function inc()
+    {
+        $compiled = (new Compiler(__DIR__ . '/_files/', __DIR__ . '/_files/cache', 'htmlspecialchars', true))
+            ->compile(__DIR__ . '/_files/inc1.phtml');
+
+        ob_start();
+        try {
+            require $compiled;
+        } finally {
+            $output = ob_get_clean();
+        }
+        $output = strtr($output, [DIRECTORY_SEPARATOR => '/']);
+        $expected = implode("\n", [
+            'this is &amp;inc1.phtml',
+            'this is &amp;inc2.phtml',
+            'this is &amp;inc3.phtml',
+        ]);
+        $this->assertStringMatchesFormat($expected, $output);
     }
 }

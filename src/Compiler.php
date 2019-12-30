@@ -1,73 +1,74 @@
 <?php
 namespace ngyuki\Ephp;
 
-use Microsoft\PhpParser\Node;
-use Microsoft\PhpParser\Parser;
-use Microsoft\PhpParser\Token;
+use RuntimeException;
 
 class Compiler
 {
     /**
      * @var string
      */
+    private $sourceDir;
+    /**
+     * @var string
+     */
+    private $compiledDir;
+
+    /**
+     * @var string
+     */
     private $echo;
 
     /**
-     * @var callable
+     * @var bool
      */
-    private $includeWrapper;
+    private $forceCompile;
 
-    public function __construct($echo = 'htmlspecialchars', callable $includeWrapper = null)
+    public function __construct(string $sourceDir, string $compiledDir, string $echo, bool $forceCompile = false)
     {
+        $this->sourceDir = realpath($sourceDir);
+        if ($this->sourceDir === false) {
+            throw new RuntimeException("Unable realpath \"$sourceDir\"");
+        }
+        $this->compiledDir = realpath($compiledDir);
+        if ($this->compiledDir === false) {
+            throw new RuntimeException("Unable realpath \"$compiledDir\"");
+        }
+        $this->sourceDir = rtrim($this->sourceDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->compiledDir = rtrim($this->compiledDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $this->echo = $echo;
-        $this->includeWrapper = $includeWrapper;
+        $this->forceCompile = $forceCompile;
     }
 
-    public function compile(string $source, string $filename = null): string
+    public function compile(string $sourceFile)
     {
-        $parser = new Parser();
-        $astNode = $parser->parseSourceFile($source);
-        return $this->visit($astNode, $filename);
-    }
+        $sourceFile = realpath($sourceFile);
+        if ($sourceFile === false) {
+            throw new RuntimeException("Unable realpath \"$sourceFile\"");
+        }
+        if (substr($sourceFile, 0, strlen($this->sourceDir)) !== $this->sourceDir) {
+            return $sourceFile;
+        }
+        $filename = substr($sourceFile, strlen($this->sourceDir));
+        $compiledFile = $this->compiledDir . $filename;
 
-    private function visit(Node $node, ?string $filename)
-    {
-        $output = '';
-        if ($node instanceof Node\Expression\EchoExpression) {
-            if ($node->echoKeyword === null) {
-                $output .= $this->echo . '(';
-                $output .= $this->visit($node->expressions, $filename);
-                $output .= ')';
-                return $output;
-            }
-        } elseif ($node instanceof Node\Expression\ScriptInclusionExpression) {
-            if ($this->includeWrapper !== null) {
-                $output .= $node->requireOrIncludeKeyword->getFullText($node->getFileContents());
-                $output .= ' (' . ($this->includeWrapper)($this->visit($node->expression, $filename)) . ')';
-                return $output;
-            }
-        } elseif ($node instanceof Node\QualifiedName) {
-            if ($filename !== null) {
-                if ($node->getText() === '__DIR__') {
-                    $output .= $node->getLeadingCommentAndWhitespaceText();
-                    $output .= var_export(dirname($filename), true);
-                    return $output;
-                }
-                if ($node->getText() === '__FILE__') {
-                    $output .= $node->getLeadingCommentAndWhitespaceText();
-                    $output .= var_export($filename, true);
-                    return $output;
-                }
-            }
+        if (!$this->forceCompile && file_exists($compiledFile) && (filemtime($sourceFile) <= filemtime($compiledFile))) {
+            return $compiledFile;
         }
 
-        foreach ($node->getChildNodesAndTokens() as $child) {
-            if ($child instanceof Node) {
-                $output .= $this->visit($child, $filename);
-            } elseif ($child instanceof Token) {
-                $output .= $child->getFullText($node->getFileContents());
-            }
+        $compiler = new StringCompiler($this->echo, function (string $expr) {
+            $serialize = var_export(serialize($this), true);
+            return '(unserialize(' . $serialize . '))->compile(' . $expr . ')';
+        });
+
+        $compiledDir = dirname($compiledFile);
+        if (!is_dir($compiledDir)) {
+            mkdir($compiledDir, 0777 , true);
         }
-        return $output;
+
+        $source = file_get_contents($sourceFile);
+        $compiled = $compiler->compileString($source, $sourceFile);
+        file_put_contents($compiledFile, $compiled);
+        return $compiledFile;
     }
 }

@@ -42,11 +42,11 @@ class StreamFilter extends php_user_filter
             $consumed += $bucket->datalen;
         }
         if ($closing) {
-            $escape = substr(strrchr($this->filtername, '.'), 1);
-            $compiler = new Compiler($escape, function ($expr) use ($escape) {
-                return var_export("php://filter/read=ephp.{$escape}/resource=", true) . '.' . $expr;
+            $echo = substr(strrchr($this->filtername, '.'), 1);
+            $compiler = new StringCompiler($echo, function ($expr) use ($echo) {
+                return var_export("php://filter/read=ephp.{$echo}/resource=", true) . '.' . $expr;
             });
-            $bucket = stream_bucket_new($this->stream, $compiler->compile($this->source, null));
+            $bucket = stream_bucket_new($this->stream, $compiler->compileString($this->source, null));
             stream_bucket_append($out, $bucket);
             $this->source = '';
         }
