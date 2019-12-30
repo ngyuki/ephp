@@ -1,6 +1,10 @@
 <?php
 namespace ngyuki\Ephp;
 
+use Microsoft\PhpParser\Node;
+use Microsoft\PhpParser\Parser;
+use Microsoft\PhpParser\Token;
+
 class Compiler
 {
     /**
@@ -15,37 +19,47 @@ class Compiler
 
     public function compile(string $source, string $filename = null): string
     {
-        $tokens = token_get_all($source);
+        $parser = new Parser();
+        $astNode = $parser->parseSourceFile($source);
+        return $this->visit($astNode, $filename);
+    }
 
-        if ($filename === null) {
-            $dirname = null;
-        } else {
-            $dirname = var_export(dirname($filename), true);
-            $filename = var_export($filename, true);
-        }
-
-        $open = 0;
+    private function visit(Node $node, ?string $filename)
+    {
         $output = '';
-
-        foreach ($tokens as $token) {
-            if (is_array($token)) {
-                list($id, $code) = $token;
-                if ($id === T_OPEN_TAG_WITH_ECHO) {
-                    $open++;
-                    $code = $code . $this->echo . '(';
-                } elseif ($id === T_CLOSE_TAG && $open && --$open === 0) {
-                    $code = ')' . $code;
-                } elseif ($id === T_DIR && $dirname !== null) {
-                    $code = $dirname;
-                } elseif ($id === T_FILE && $filename !== null) {
-                    $code = $filename;
+        if ($node instanceof Node\Expression\EchoExpression) {
+            if ($node->echoKeyword === null) {
+                $output .= $this->echo . '(';
+                $output .= $this->visit($node->expressions, $filename);
+                $output .= ')';
+                return $output;
+            }
+        } elseif ($node instanceof Node\Expression\ScriptInclusionExpression) {
+            $output .= $node->requireOrIncludeKeyword->getFullText($node->getFileContents());
+            $output .= $this->visit($node->expression, $filename);
+            return $output;
+        } elseif ($node instanceof Node\QualifiedName) {
+            if ($filename !== null) {
+                if ($node->getText() === '__DIR__') {
+                    $output .= $node->getLeadingCommentAndWhitespaceText();
+                    $output .= var_export(dirname($filename), true);
+                    return $output;
                 }
-                $output .= $code;
-            } else {
-                $output .= $token;
+                if ($node->getText() === '__FILE__') {
+                    $output .= $node->getLeadingCommentAndWhitespaceText();
+                    $output .= var_export($filename, true);
+                    return $output;
+                }
             }
         }
 
+        foreach ($node->getChildNodesAndTokens() as $child) {
+            if ($child instanceof Node) {
+                $output .= $this->visit($child, $filename);
+            } elseif ($child instanceof Token) {
+                $output .= $child->getFullText($node->getFileContents());
+            }
+        }
         return $output;
     }
 }

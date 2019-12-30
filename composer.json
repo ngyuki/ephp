@@ -6,7 +6,7 @@
     },
     "require": {
         "php": "^7.2",
-        "ext-tokenizer": "*"
+        "microsoft/tolerant-php-parser": "^0.0.19"
     },
     "autoload": {
         "psr-4": {

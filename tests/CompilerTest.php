@@ -12,7 +12,7 @@ class CompilerTest extends TestCase
         $code = (new Compiler('App\\Strings::escape'))->compile(file_get_contents($file), '/path/to/file.php');
         $this->assertIsString($code);
         $expected = implode("\n", [
-            "<s><?=App\Strings::escape( '<br>' )?></s>",
+            "<s><?=App\Strings::escape( '<br>') ?></s>",
             "<s><?php echo '<br>' ?></s>",
             "<s><?php echo '/path/to' ?></s>",
             "<s><?php echo '/path/to/file.php' ?></s>",
