@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 class CompilerTest extends TestCase
 {
-    function test()
+    public function test()
     {
         $compiled = (new Compiler(__DIR__ . '/_files/', __DIR__ . '/_files/cache', 'htmlspecialchars', true))
             ->compile(__DIR__ . '/_files/01.phtml');

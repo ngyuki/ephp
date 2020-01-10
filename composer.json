@@ -28,6 +28,9 @@
         ],
         "coverage": [
             "@php tools/phpunit --colors=always --coverage-html coverage"
+        ],
+        "cs": [
+            "@php tools/php-cs-fixer fix --dry-run --diff --ansi -v"
         ]
     }
 }

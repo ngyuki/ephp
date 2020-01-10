@@ -63,7 +63,7 @@ class Compiler
 
         $compiledDir = dirname($compiledFile);
         if (!is_dir($compiledDir)) {
-            mkdir($compiledDir, 0777 , true);
+            mkdir($compiledDir, 0777, true);
         }
 
         $source = file_get_contents($sourceFile);

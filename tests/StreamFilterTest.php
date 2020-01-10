@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 class StreamFilterTest extends TestCase
 {
-    function test()
+    public function test()
     {
         $file = __DIR__ . '/_files/01.phtml';
         ob_start();
