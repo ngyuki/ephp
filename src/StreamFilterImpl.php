@@ -36,6 +36,7 @@ class StreamFilterImpl extends php_user_filter
                 return var_export("php://filter/read=ephp.{$echo}/resource=", true) . '.' . $expr;
             });
             $bucket = stream_bucket_new($this->stream, $compiler->translate($this->source, null));
+            assert(is_object($bucket));
             stream_bucket_append($out, $bucket);
             $this->source = '';
         }

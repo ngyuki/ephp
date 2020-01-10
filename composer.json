@@ -17,6 +17,9 @@
         "php": "^7.2",
         "microsoft/tolerant-php-parser": "^0.0.19"
     },
+    "require-dev": {
+        "mikey179/vfsstream": "^1.6"
+    },
     "autoload": {
         "psr-4": {
             "ngyuki\\Ephp\\": "src/"
@@ -31,6 +34,9 @@
         ],
         "cs": [
             "@php tools/php-cs-fixer fix --dry-run --diff --ansi -v"
+        ],
+        "phan": [
+            "@php tools/phan -p --color"
         ]
     }
 }

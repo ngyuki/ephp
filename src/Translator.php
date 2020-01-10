@@ -13,7 +13,7 @@ class Translator
     private $echo;
 
     /**
-     * @var callable
+     * @var callable|null
      */
     private $includeWrapper;
 
