@@ -9,6 +9,7 @@ class Compiler
      * @var string
      */
     private $sourceDir;
+
     /**
      * @var string
      */
@@ -24,7 +25,7 @@ class Compiler
      */
     private $forceCompile;
 
-    public function __construct(string $sourceDir, string $compiledDir, string $echo, bool $forceCompile = false)
+    public function __construct(string $sourceDir, string $compiledDir, string $echo = 'htmlspecialchars', bool $forceCompile = false)
     {
         $this->sourceDir = realpath($sourceDir);
         if ($this->sourceDir === false) {
@@ -40,17 +41,16 @@ class Compiler
         $this->forceCompile = $forceCompile;
     }
 
-    public function compile(string $sourceFile)
+    public function compile(string $filename)
     {
-        $sourceFile = realpath($sourceFile);
+        $sourceFile = realpath($filename);
         if ($sourceFile === false) {
-            throw new RuntimeException("Unable realpath \"$sourceFile\"");
+            throw new RuntimeException("Unable realpath \"$filename\"");
         }
         if (substr($sourceFile, 0, strlen($this->sourceDir)) !== $this->sourceDir) {
-            return $sourceFile;
+            throw new RuntimeException("Source \"$filename\" should be inside \"$this->sourceDir\"");
         }
-        $filename = substr($sourceFile, strlen($this->sourceDir));
-        $compiledFile = $this->compiledDir . $filename;
+        $compiledFile = $this->compiledDir . substr($sourceFile, strlen($this->sourceDir));
 
         if (!$this->forceCompile && file_exists($compiledFile) && (filemtime($sourceFile) <= filemtime($compiledFile))) {
             return $compiledFile;
