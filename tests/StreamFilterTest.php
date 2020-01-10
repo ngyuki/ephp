@@ -11,7 +11,7 @@ class StreamFilterTest extends TestCase
         $file = __DIR__ . '/_files/01.phtml';
         ob_start();
         try {
-            require StreamFilter::path($file, 'htmlspecialchars');
+            require (new StreamFilter())->path($file);
         } finally {
             $output = ob_get_clean();
         }
@@ -33,7 +33,7 @@ class StreamFilterTest extends TestCase
         $file = __DIR__ . '/_files/inc1.phtml';
         ob_start();
         try {
-            require StreamFilter::path($file, 'htmlspecialchars');
+            require (new StreamFilter())->path($file);
         } finally {
             $output = ob_get_clean();
         }
