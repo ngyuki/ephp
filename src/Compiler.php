@@ -29,11 +29,11 @@ class Compiler
     {
         $this->sourceDir = realpath($sourceDir);
         if ($this->sourceDir === false) {
-            throw new RuntimeException("Unable realpath \"$sourceDir\"");
+            throw new RuntimeException("Unable source dir realpath \"$sourceDir\"");
         }
-        $this->compiledDir = realpath($compiledDir);
-        if ($this->compiledDir === false) {
-            throw new RuntimeException("Unable realpath \"$compiledDir\"");
+        $this->compiledDir = $compiledDir;
+        if (!is_dir($this->compiledDir)) {
+            throw new RuntimeException("Directory not exists \"$compiledDir\"");
         }
         $this->sourceDir = rtrim($this->sourceDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $this->compiledDir = rtrim($this->compiledDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
@@ -45,7 +45,7 @@ class Compiler
     {
         $sourceFile = realpath($filename);
         if ($sourceFile === false) {
-            throw new RuntimeException("Unable realpath \"$filename\"");
+            throw new RuntimeException("Unable source file realpath \"$filename\"");
         }
         if (substr($sourceFile, 0, strlen($this->sourceDir)) !== $this->sourceDir) {
             throw new RuntimeException("Source \"$filename\" should be inside \"$this->sourceDir\"");

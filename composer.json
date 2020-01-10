@@ -43,5 +43,8 @@
             "@composer phan",
             "@composer test"
         ]
+    },
+    "require-dev": {
+        "mikey179/vfsstream": "^1.6"
     }
 }
