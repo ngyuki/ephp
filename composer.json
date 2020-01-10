@@ -16,6 +16,9 @@
     "scripts": {
         "test": [
             "@php tools/phpunit --colors=always"
+        ],
+        "coverage": [
+            "@php tools/phpunit --colors=always --coverage-html coverage"
         ]
     }
 }
