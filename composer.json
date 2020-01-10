@@ -1,4 +1,13 @@
 {
+    "name": "ngyuki/ephp",
+    "description": "ephp is php template",
+    "type": "library",
+    "keywords": [ "template" ],
+    "homepage": "https://github.com/ngyuki/ephp",
+    "license": "MIT",
+    "authors": [
+        { "name": "ngyuki", "email": "ngyuki.jp@gmail.com" }
+    ],
     "config": {
         "platform": {
             "php": "7.2"
