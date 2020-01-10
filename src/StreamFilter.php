@@ -43,10 +43,10 @@ class StreamFilter extends php_user_filter
         }
         if ($closing) {
             $echo = substr(strrchr($this->filtername, '.'), 1);
-            $compiler = new StringCompiler($echo, function ($expr) use ($echo) {
+            $compiler = new Translator($echo, function ($expr) use ($echo) {
                 return var_export("php://filter/read=ephp.{$echo}/resource=", true) . '.' . $expr;
             });
-            $bucket = stream_bucket_new($this->stream, $compiler->compileString($this->source, null));
+            $bucket = stream_bucket_new($this->stream, $compiler->translate($this->source, null));
             stream_bucket_append($out, $bucket);
             $this->source = '';
         }

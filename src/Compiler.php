@@ -56,7 +56,7 @@ class Compiler
             return $compiledFile;
         }
 
-        $compiler = new StringCompiler($this->echo, function (string $expr) {
+        $compiler = new Translator($this->echo, function (string $expr) {
             $serialize = var_export(serialize($this), true);
             return '(unserialize(' . $serialize . '))->compile(' . $expr . ')';
         });
@@ -67,7 +67,7 @@ class Compiler
         }
 
         $source = file_get_contents($sourceFile);
-        $compiled = $compiler->compileString($source, $sourceFile);
+        $compiled = $compiler->translate($source, $sourceFile);
         file_put_contents($compiledFile, $compiled);
         return $compiledFile;
     }

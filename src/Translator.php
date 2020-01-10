@@ -5,7 +5,7 @@ use Microsoft\PhpParser\Node;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
 
-class StringCompiler
+class Translator
 {
     /**
      * @var string
@@ -23,7 +23,7 @@ class StringCompiler
         $this->includeWrapper = $includeWrapper;
     }
 
-    public function compileString(string $source, string $filename = null): string
+    public function translate(string $source, string $filename = null): string
     {
         $parser = new Parser();
         $astNode = $parser->parseSourceFile($source);
