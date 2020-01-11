@@ -6,6 +6,8 @@ use php_user_filter;
 /**
  * @property resource $stream
  * @property string $filtername
+ *
+ * @internal
  */
 class StreamFilterImpl extends php_user_filter
 {

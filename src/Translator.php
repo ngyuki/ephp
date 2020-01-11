@@ -5,6 +5,9 @@ use Microsoft\PhpParser\Node;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
 
+/**
+ * @internal
+ */
 class Translator
 {
     /**
