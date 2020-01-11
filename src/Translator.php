@@ -64,7 +64,26 @@ class Translator
             }
         }
 
+        $children = [];
         foreach ($node->getChildNodesAndTokens() as $child) {
+            $children[] = $child;
+        }
+
+        usort($children, function ($a, $b) {
+            if ($a instanceof Node) {
+                $aa = $a->getFullStart();
+            } elseif ($a instanceof Token) {
+                $aa = $a->getFullStart();
+            }
+            if ($b instanceof Node) {
+                $bb = $b->getFullStart();
+            } elseif ($b instanceof Token) {
+                $bb = $b->getFullStart();
+            }
+            return $aa <=> $bb;
+        });
+
+        foreach ($children as $child) {
             if ($child instanceof Node) {
                 $output .= $this->visit($child, $filename);
             } elseif ($child instanceof Token) {
