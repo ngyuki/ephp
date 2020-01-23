@@ -69,6 +69,10 @@ class Translator
             $children[] = $child;
         }
 
+        if ($node instanceof Node\Statement\InlineHtml && $node->echoStatement) {
+            $children[] = $node->echoStatement;
+        }
+
         usort($children, function ($a, $b) {
             if ($a instanceof Node) {
                 $aa = $a->getFullStart();
