@@ -2,8 +2,6 @@
 namespace ngyuki\Ephp;
 
 use Microsoft\PhpParser\Node;
-use Microsoft\PhpParser\Parser;
-use Microsoft\PhpParser\Token;
 
 /**
  * @internal
@@ -28,72 +26,27 @@ class Translator
 
     public function translate(string $source, string $filename = null): string
     {
-        $parser = new Parser();
-        $astNode = $parser->parseSourceFile($source);
-        return $this->visit($astNode, $filename);
-    }
-
-    private function visit(Node $node, ?string $filename)
-    {
-        $output = '';
-        if ($node instanceof Node\Expression\EchoExpression) {
-            if ($node->echoKeyword === null) {
-                $output .= $this->echo . '(';
-                $output .= $this->visit($node->expressions, $filename);
-                $output .= ')';
-                return $output;
-            }
-        } elseif ($node instanceof Node\Expression\ScriptInclusionExpression) {
-            if ($this->includeWrapper !== null) {
-                $output .= $node->requireOrIncludeKeyword->getFullText($node->getFileContents());
-                $output .= ' (' . ($this->includeWrapper)($this->visit($node->expression, $filename)) . ')';
-                return $output;
-            }
-        } elseif ($node instanceof Node\QualifiedName) {
-            if ($filename !== null) {
-                if ($node->getText() === '__DIR__') {
-                    $output .= $node->getLeadingCommentAndWhitespaceText();
-                    $output .= var_export(dirname($filename), true);
-                    return $output;
+        return (new NodeTraverser())->traverse($source, function (Node $node, callable $next) use ($filename) {
+            if ($node instanceof Node\Expression\EchoExpression) {
+                if ($node->echoKeyword === null) {
+                    return $this->echo . '(' . $next($node->expressions, $filename) . ')';
                 }
-                if ($node->getText() === '__FILE__') {
-                    $output .= $node->getLeadingCommentAndWhitespaceText();
-                    $output .= var_export($filename, true);
-                    return $output;
+            } elseif ($node instanceof Node\Expression\ScriptInclusionExpression) {
+                if ($this->includeWrapper !== null) {
+                    return $node->requireOrIncludeKeyword->getFullText($node->getFileContents())
+                        .  ' (' . ($this->includeWrapper)($next($node->expression, $filename)) . ')';
+                }
+            } elseif ($node instanceof Node\QualifiedName) {
+                if ($filename !== null) {
+                    if ($node->getText() === '__DIR__') {
+                        return $node->getLeadingCommentAndWhitespaceText() . var_export(dirname($filename), true);
+                    }
+                    if ($node->getText() === '__FILE__') {
+                        return $node->getLeadingCommentAndWhitespaceText() . var_export($filename, true);
+                    }
                 }
             }
-        }
-
-        $children = [];
-        foreach ($node->getChildNodesAndTokens() as $child) {
-            $children[] = $child;
-        }
-
-        if ($node instanceof Node\Statement\InlineHtml && $node->echoStatement) {
-            $children[] = $node->echoStatement;
-        }
-
-        usort($children, function ($a, $b) {
-            if ($a instanceof Node) {
-                $aa = $a->getFullStart();
-            } elseif ($a instanceof Token) {
-                $aa = $a->getFullStart();
-            }
-            if ($b instanceof Node) {
-                $bb = $b->getFullStart();
-            } elseif ($b instanceof Token) {
-                $bb = $b->getFullStart();
-            }
-            return $aa <=> $bb;
+            return null;
         });
-
-        foreach ($children as $child) {
-            if ($child instanceof Node) {
-                $output .= $this->visit($child, $filename);
-            } elseif ($child instanceof Token) {
-                $output .= $child->getFullText($node->getFileContents());
-            }
-        }
-        return $output;
     }
 }
