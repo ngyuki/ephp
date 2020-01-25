@@ -37,6 +37,9 @@
         "cs": [
             "@php tools/php-cs-fixer fix --dry-run --diff --ansi -v"
         ],
+        "fix": [
+            "@php tools/php-cs-fixer fix --diff --ansi -v"
+        ],
         "phan": [
             "@php tools/phan -p --color"
         ],
