@@ -19,6 +19,8 @@ class StreamFilter
 
     public function path(string $filename): string
     {
+        // Apply read filter with php stream wrapper
+        // @see https://github.com/php/php-src/blob/master/ext/standard/php_fopen_wrapper.c#L339-L381
         return "php://filter/read=ephp.{$this->echo}/resource={$filename}";
     }
 }
