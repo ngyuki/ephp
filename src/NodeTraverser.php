@@ -22,6 +22,7 @@ class NodeTraverser
 
             $output = '';
 
+            // Workaround @see https://github.com/microsoft/tolerant-php-parser/pull/310
             $children = [];
             foreach ($node->getChildNodesAndTokens() as $child) {
                 $children[] = $child;
@@ -31,6 +32,7 @@ class NodeTraverser
                 }
             }
 
+            // Workaround @see https://github.com/microsoft/tolerant-php-parser/pull/308
             usort($children, function ($a, $b) {
                 $aa = 0;
                 $bb = 0;
